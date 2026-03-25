@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FHIR MedSafety CDS Pro</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand: #0f172a; --accent: #2563eb; --danger: #ef4444; --warning: #f59e0b;
+      --success: #10b981; --bg: #f8fafc; --card: #ffffff;
+    }
+    
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui; background: var(--bg); margin: 0; color: #1e293b; overflow-x: hidden; }
+
+    /* 入場動畫 */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .app-layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+    .sidebar { background: var(--brand); color: white; padding: 30px 20px; position: sticky; top: 0; height: 100vh; }
+    .main-content { padding: 40px; }
+
+    .card { 
+      background: var(--card); border-radius: 16px; padding: 24px; 
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+    
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+    .metric-card { padding: 20px; border-radius: 12px; background: #fff; border-bottom: 4px solid #e2e8f0; }
+    /* 警示動畫 */
+    .metric-card.alert { border-bottom-color: var(--danger); animation: pulse 2s infinite; }
+    .metric-card.warn { border-bottom-color: var(--warning); }
+    .metric-value { font-size: 2.5rem; font-weight: 700; margin: 10px 0; }
+    .metric-label { font-size: 0.875rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .cds-item { padding: 16px; border-radius: 12px; margin-bottom: 12px; border-left: 6px solid #cbd5e0; background: #f1f5f9; }
+    .cds-critical { border-left-color: var(--danger); background: #fef2f2; color: #991b1b; }
+    .cds-warning { border-left-color: var(--warning); background: #fffbeb; color: #92400e; }
+
+    .btn-action { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .btn-action:hover { background: #1d4ed8; }
+
+    .patient-selector-card { cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
+    .patient-selector-card:hover { border-color: var(--accent); transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <div class="sidebar">
+    <h2 style="color: #38bdf8;">MedSafety CDS</h2>
+    <p style="font-size: 0.8rem; opacity: 0.7;">FHIR Server: THAS MOHW</p>
+    <hr style="opacity: 0.2; margin: 20px 0;">
+    <nav>
+      <div style="padding: 10px 0; font-weight: 600; color: #38bdf8; cursor: pointer;" onclick="backToSelector()">臨床監測首頁</div>
+      <div style="padding: 10px 0; opacity: 0.5;">歷史診斷紀錄</div>
+      <div style="padding: 10px 0; opacity: 0.5;">系統參數設定</div>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div id="selectorView" class="view active">
+      <h1 style="margin-bottom: 30px;">請選擇病患進行決策支援</h1>
+      <div id="patientGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:24px;"></div>
+    </div>
