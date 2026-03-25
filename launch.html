@@ -3,134 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>臺灣50優良SMART on FHIR 應用程式徵案 - 測試啟動頁</title>
+  <title>臺灣50優良SMART on FHIR 應用程式徵案</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
   <style>
-    /* 保留您原有的全部樣式（為了簡潔這裡省略相同部分，您可直接複製貼上） */
     :root {
-      --brand: #0f172a; --accent: #2563eb; --success: #10b981; --bg: #f8fafc;
+      --brand: #0f172a;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --success: #10b981;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
     }
-    body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #1e293b; }
-    .launch-container { max-width: 1100px; margin: 20px auto; background: white; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); overflow: hidden; }
-    .hero { background: linear-gradient(135deg, var(--brand) 0%, #1e293b 100%); color: white; padding: 60px 40px; text-align: center; }
-    .logo { font-size: 3rem; font-weight: 700; margin-bottom: 12px; background: linear-gradient(90deg, #38bdf8, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .btn { padding: 14px 36px; font-size: 1.1rem; font-weight: 600; border-radius: 12px; text-decoration: none; transition: all 0.3s; }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); }
-    .mode-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; transition: all 0.3s; }
-    .mode-card:hover { border-color: #2563eb; transform: translateY(-4px); box-shadow: 0 10px 25px rgba(37,99,235,0.1); }
-    .code-block { background: #1e293b; color: #a5b4fc; padding: 16px; border-radius: 12px; font-family: monospace; font-size: 0.95rem; overflow-x: auto; white-space: pre; }
-    .warning { background: #fef3c7; border-left: 5px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 8px; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .launch-container {
+      max-width: 900px;
+      width: 100%;
+      background: var(--card);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      overflow: hidden;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--brand) 0%, #1e293b 100%);
+      color: white;
+      padding: 80px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 30% 20%, rgba(37,99,235,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .logo {
+      font-size: 3.2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(90deg, #38bdf8, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 1.4rem;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-bottom: 32px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.8;
+      max-width: 600px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+
+    .btn-start {
+      display: inline-block;
+      padding: 16px 48px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+      cursor: pointer;
+    }
+
+    .btn-start:hover {
+      background: var(--accent-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(37,99,235,0.4);
+    }
+
+    .features {
+      padding: 60px 40px;
+      background: var(--bg);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      margin-top: 40px;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: 16px;
+      padding: 32px 24px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      transition: transform 0.3s ease;
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .feature-icon {
+      font-size: 2.8rem;
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-light);
+      font-size: 0.9rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 60px 30px; }
+      .logo { font-size: 2.8rem; }
+      .tagline { font-size: 1.25rem; }
+      .btn-start { padding: 14px 40px; font-size: 1.1rem; }
+    }
   </style>
-  <!-- 引入 SMART on FHIR JS Library -->
-  <script src="https://cdn.jsdelivr.net/npm/fhirclient@2/dist/fhir-client.js"></script>
 </head>
 <body>
 
 <div class="launch-container">
-
-  <!-- Hero -->
   <div class="hero">
     <h1 class="logo">SMART on FHIR</h1>
-    <p style="font-size:1.5rem; margin:16px 0;">臺灣50優良SMART App 徵案 - 第二階段測試啟動頁</p>
-    <p style="max-width:700px; margin:0 auto 30px; opacity:0.9;">
-      請選擇下方測試模式，點擊「立即測試」即可使用官方提供的 Client ID 與 Client Secret 進行授權流程。
+    <p class="tagline">臺灣50優良SMART on FHIR 應用程式徵案</p>
+    <p class="subtitle">
+      SMART App Submission Briefing & Workshop<br>
+      主辦單位：衛生福利部資訊處<br>
+      透過SMART on FHIR的導入，加值FHIR生態系之應用
     </p>
+    <a href="#" id="launch-button" class="btn-start">進入系統 →</a>
   </div>
 
-  <!-- 官方重要說明 -->
-  <div style="padding:30px 40px; background:#f8fafc;">
-    <div class="warning">
-      <strong>重要說明：</strong><br>
-      此組 Client ID 及 Client Secret 僅供內部測試使用，不供未來產品化使用。<br>
-      若您需要提供測試資料，請以 <strong>FHIR Bundle JSON</strong> 格式提供，並請勿提供真實病患資料。
+  <div class="features">
+    <h2 style="text-align:center; font-size:2rem; margin-bottom:16px; color:var(--brand);">課程與徵案亮點</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🛠️</div>
+        <div class="feature-title">開發指南</div>
+        <p class="feature-desc">學習如何開發SMART App，包括EHR啟動流程、OAuth2授權與FHIR資源查詢。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧪</div>
+        <div class="feature-title">測試環境</div>
+        <p class="feature-desc">使用Sandbox測試環境、SMART App Launcher及廠商沙盒進行驗證。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <div class="feature-title">提案上架</div>
+        <p class="feature-desc">了解App提案流程、徵案說明與上架步驟，促進醫療應用互通與病人安全。</p>
+      </div>
     </div>
   </div>
 
-  <!-- 三種測試模式 -->
-  <div style="padding:40px;">
-    <h2 style="text-align:center; margin-bottom:32px; color:#0f172a;">選擇測試模式</h2>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px,1fr)); gap:24px;">
-
-      <!-- EHR Launch -->
-      <div class="mode-card">
-        <h3 style="color:#2563eb;">1. EHR Launch（從 EHR 內啟動）</h3>
-        <p>Launch URL、Redirect URI、Scopes</p>
-        <button onclick="startEHRLaunch()" class="btn btn-primary" style="width:100%; margin-top:16px;">立即測試 EHR Launch</button>
-        <details style="margin-top:16px;">
-          <summary>程式碼</summary>
-          <pre class="code-block">FHIR.oauth2.authorize({
-  clientId: "cc344727-6f90-496c-94fd-c7829aa9a51d",
-  clientSecret: "79f04b56b33491716c0880af72cdef7d3f0629111421cedd18353651cd313d9e",
-  scope: "launch openid fhirUser patient/*.read",
-  redirectUri: window.location.origin + "/index.html"
-});</pre>
-        </details>
-      </div>
-
-      <!-- Standalone Launch -->
-      <div class="mode-card">
-        <h3 style="color:#2563eb;">2. Standalone Launch（獨立啟動）</h3>
-        <p>Redirect URI、Scopes（ISS 設為官方 Launcher）</p>
-        <button onclick="startStandaloneLaunch()" class="btn btn-primary" style="width:100%; margin-top:16px;">立即測試 Standalone Launch</button>
-        <details style="margin-top:16px;">
-          <summary>程式碼</summary>
-          <pre class="code-block">FHIR.oauth2.authorize({
-  clientId: "cc344727-6f90-496c-94fd-c7829aa9a51d",
-  clientSecret: "79f04b56b33491716c0880af72cdef7d3f0629111421cedd18353651cd313d9e",
-  scope: "openid fhirUser patient/*.read",
-  iss: "官方提供的 ISS URL",   // 請替換為官方 Launcher ISS
-  redirectUri: window.location.origin + "/index.html"
-});</pre>
-        </details>
-      </div>
-
-      <!-- Backend Service -->
-      <div class="mode-card">
-        <h3 style="color:#2563eb;">3. Backend Service（後端服務）</h3>
-        <p>Scopes、JWKS 或 JWKS URL</p>
-        <p style="color:#ef4444; font-size:0.9rem;">（此模式需在 Node.js 後端執行，clientSecret 不可暴露於前端）</p>
-        <button onclick="alert('Backend Service 模式請在後端程式碼中使用 clientSecret，並提供 JWKS 給官方。')" class="btn btn-primary" style="width:100%; margin-top:16px;">查看 Backend Service 說明</button>
-      </div>
-
-    </div>
+  <div class="footer">
+    © 2026 衛生福利部資訊處 • Powered by FHIR & SMART • 課程設計：李建璋處長 • 版本：v1.0
   </div>
-
-  <!-- 測試資料提醒 -->
-  <div style="padding:30px 40px; background:#f8fafc; border-top:1px solid #e2e8f0;">
-    <h3>測試資料準備</h3>
-    <p>若有特定測試資料，請以 <strong>FHIR Bundle JSON</strong> 格式提供，並壓縮成 ZIP 或 7Z 檔後提供給官方。</p>
-    <p>完成準備後，請提供至少 3 個測試時段（每個團隊約 30 分鐘）。</p>
-  </div>
-
-  <div class="footer" style="text-align:center; padding:32px; color:#64748b; font-size:0.9rem;">
-    © 2026 衛生福利部資訊處 • Powered by SMART on FHIR<br>
-    第二階段測試專用頁面 • 如有問題請聯繫徵案團隊
-  </div>
-
 </div>
 
 <script>
-// EHR Launch
-function startEHRLaunch() {
-  FHIR.oauth2.authorize({
-    clientId: "cc344727-6f90-496c-94fd-c7829aa9a51d",
-    clientSecret: "79f04b56b33491716c0880af72cdef7d3f0629111421cedd18353651cd313d9e",
-    scope: "launch openid fhirUser patient/*.read encounter/*.read",
-    redirectUri: window.location.origin + "/index.html"
-  });
-}
+  document.getElementById('launch-button').addEventListener('click', function(e) {
+    e.preventDefault();
 
-// Standalone Launch（請替換 ISS 為官方提供的 Launcher URL）
-function startStandaloneLaunch() {
-  FHIR.oauth2.authorize({
-    clientId: "cc344727-6f90-496c-94fd-c7829aa9a51d",
-    clientSecret: "79f04b56b33491716c0880af72cdef7d3f0629111421cedd18353651cd313d9e",
-    scope: "openid fhirUser patient/*.read",
-    iss: "https://官方-launcher-url/fhir",   // ← 請替換為官方提供的 ISS
-    redirectUri: window.location.origin + "/index.html"
+    // 根據官方提供的 Client ID 與 Secret 進行授權啟動
+    FHIR.oauth2.authorize({
+      // 您收到的第二階段測試憑證
+      client_id: "cc344727-6f90-496c-94fd-c7829aa9a51d", 
+      secret: "79f04b56b33491716c0880af72cdef7d3f0629111421cedd18353651cd313d9e",
+      
+      // 根據應用需求設定權限範圍 (Scope)
+      // 包含 launch (啟動內容), patient/*.read (讀取病患資料), openid (身份驗證)
+      scope: "patient/*.read launch openid fhirUser",
+      
+      // 授權完成後的重新導向路徑
+      redirect_uri: "index.html"
+    });
   });
-}
 </script>
 
 </body>
