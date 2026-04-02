@@ -1,229 +1,175 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>臺灣50優良SMART on FHIR 應用程式徵案</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
-  <style>
-    :root {
-      --brand: #0f172a;
-      --accent: #2563eb;
-      --accent-dark: #1d4ed8;
-      --success: #10b981;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --text-light: #64748b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>糖尿病藥物安全 CDS - 系統啟動</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
+    <style>
+        :root {
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --brand: #0f172a;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #fff; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            width: 100%; max-width: 460px;
+            padding: 44px 40px;
+            animation: up 0.45s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+        .logo-row { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+        .logo-icon {
+            width:44px; height:44px;
+            background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+            border-radius:12px; display:flex; align-items:center; justify-content:center;
+            color:#fff; font-size:20px;
+        }
+        .logo-name { font-size:1rem; font-weight:700; color:var(--brand); }
+        .logo-sub  { font-size:0.72rem; color:var(--text-light); }
 
-    .launch-container {
-      max-width: 900px;
-      width: 100%;
-      background: var(--card);
-      border-radius: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-      overflow: hidden;
-      animation: fadeIn 1s ease-out;
-    }
+        .badge {
+            display:inline-flex; align-items:center; gap:5px;
+            background:#eff6ff; color:var(--accent);
+            border:1px solid #bfdbfe; border-radius:20px;
+            padding:3px 10px; font-size:0.72rem; font-weight:600;
+            margin-bottom:18px;
+        }
+        h2 { font-size:1.4rem; font-weight:700; color:var(--brand); margin-bottom:8px; }
+        .desc { font-size:0.86rem; color:var(--text-light); line-height:1.65; margin-bottom:24px; }
 
-    .hero {
-      background: linear-gradient(135deg, var(--brand) 0%, #1e293b 100%);
-      color: white;
-      padding: 80px 60px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
+        .steps { display:flex; flex-direction:column; gap:8px; margin-bottom:26px; }
+        .step {
+            display:flex; align-items:center; gap:10px;
+            padding:10px 14px;
+            background:var(--bg); border:1px solid var(--border);
+            border-radius:9px; font-size:0.83rem; color:#334155; font-weight:500;
+        }
+        .step code { font-family:monospace; background:#dbeafe; color:var(--accent); padding:1px 5px; border-radius:4px; font-size:0.8rem; }
+        .num {
+            width:22px; height:22px; flex-shrink:0;
+            background:#dbeafe; color:var(--accent); border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:10px; font-weight:700;
+        }
 
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: radial-gradient(circle at 30% 20%, rgba(37,99,235,0.15) 0%, transparent 60%);
-      pointer-events: none;
-    }
+        .error-box {
+            display:none; background:#fef2f2; border:1px solid #fecaca;
+            border-radius:10px; padding:13px 15px;
+            font-size:0.83rem; color:#991b1b; line-height:1.6; margin-bottom:18px;
+        }
+        .error-box.show { display:block; }
 
-    .logo {
-      font-size: 3.2rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      background: linear-gradient(90deg, #38bdf8, #60a5fa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+        .btn {
+            width:100%; padding:14px;
+            background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+            color:#fff; border:none; border-radius:12px;
+            font-size:1rem; font-weight:600; font-family:inherit;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+            box-shadow:0 4px 14px rgba(37,99,235,0.3); transition:all 0.2s; margin-bottom:18px;
+        }
+        .btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,0.4); }
+        .btn:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+        .spinner {
+            width:15px; height:15px;
+            border:2px solid rgba(255,255,255,0.35); border-top-color:#fff;
+            border-radius:50%; animation:spin 0.7s linear infinite; display:none;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
 
-    .tagline {
-      font-size: 1.4rem;
-      font-weight: 500;
-      opacity: 0.9;
-      margin-bottom: 32px;
-    }
-
-    .subtitle {
-      font-size: 1.1rem;
-      opacity: 0.8;
-      max-width: 600px;
-      margin: 0 auto 40px;
-      line-height: 1.6;
-    }
-
-    .btn-start {
-      display: inline-block;
-      padding: 16px 48px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 20px rgba(37,99,235,0.3);
-      cursor: pointer;
-    }
-
-    .btn-start:hover {
-      background: var(--accent-dark);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(37,99,235,0.4);
-    }
-
-    .features {
-      padding: 60px 40px;
-      background: var(--bg);
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 32px;
-      margin-top: 40px;
-    }
-
-    .feature-card {
-      background: white;
-      border-radius: 16px;
-      padding: 32px 24px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-      transition: transform 0.3s ease;
-      text-align: center;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-8px);
-    }
-
-    .feature-icon {
-      font-size: 2.8rem;
-      margin-bottom: 16px;
-    }
-
-    .feature-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .feature-desc {
-      color: var(--text-light);
-      line-height: 1.6;
-    }
-
-    .footer {
-      text-align: center;
-      padding: 32px;
-      color: var(--text-light);
-      font-size: 0.9rem;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 768px) {
-      .hero { padding: 60px 30px; }
-      .logo { font-size: 2.8rem; }
-      .tagline { font-size: 1.25rem; }
-      .btn-start { padding: 14px 40px; font-size: 1.1rem; }
-    }
-  </style>
+        .sec { text-align:center; font-size:0.73rem; color:var(--text-light); }
+    </style>
 </head>
 <body>
-
-<div class="launch-container">
-  <div class="hero">
-    <h1 class="logo">SMART on FHIR</h1>
-    <p class="tagline">臺灣50優良SMART on FHIR 應用程式徵案</p>
-    <p class="subtitle">
-      SMART App Submission Briefing & Workshop<br>
-      主辦單位：衛生福利部資訊處<br>
-      透過SMART on FHIR的導入，加值FHIR生態系之應用
-    </p>
-    <a href="#" id="launch-button" class="btn-start">進入系統 →</a>
-  </div>
-
-  <div class="features">
-    <h2 style="text-align:center; font-size:2rem; margin-bottom:16px; color:var(--brand);">課程與徵案亮點</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🛠️</div>
-        <div class="feature-title">開發指南</div>
-        <p class="feature-desc">學習如何開發SMART App，包括EHR啟動流程、OAuth2授權與FHIR資源查詢。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🧪</div>
-        <div class="feature-title">測試環境</div>
-        <p class="feature-desc">使用Sandbox測試環境、SMART App Launcher及廠商沙盒進行驗證。</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📈</div>
-        <div class="feature-title">提案上架</div>
-        <p class="feature-desc">了解App提案流程、徵案說明與上架步驟，促進醫療應用互通與病人安全。</p>
-      </div>
+<div class="card">
+    <div class="logo-row">
+        <div class="logo-icon">⚕</div>
+        <div>
+            <div class="logo-name">MedSafety CDS</div>
+            <div class="logo-sub">糖尿病藥物安全決策支援系統</div>
+        </div>
     </div>
-  </div>
 
-  <div class="footer">
-    © 2026 衛生福利部資訊處 • Powered by FHIR & SMART • 課程設計：李建璋處長 • 版本：v1.0
-  </div>
+    <div class="badge">🔵 SMART on FHIR — EHR Launch</div>
+
+    <h2>系統啟動授權</h2>
+    <p class="desc">本系統透過 SMART on FHIR 標準從 EHR 取得當前就診病患資料，即時執行 ADA 2025 藥物安全決策支援。</p>
+
+    <div class="steps">
+        <div class="step"><div class="num">1</div>EHR 傳入 <code>iss</code> 與 <code>launch</code> 參數</div>
+        <div class="step"><div class="num">2</div>向 Authorization Server 執行 OAuth 2.0 授權</div>
+        <div class="step"><div class="num">3</div>取得 access token，讀取病患 context</div>
+        <div class="step"><div class="num">4</div>載入藥物安全 CDS 決策介面</div>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <button class="btn" id="launch-btn" onclick="startLaunch()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btn-text">🚀 啟動系統授權</span>
+    </button>
+
+    <div class="sec">🔒 Public App — 不儲存 client_secret，符合 SMART on FHIR 規範</div>
 </div>
 
 <script>
-  document.getElementById('launch-button').addEventListener('click', function(e) {
-    e.preventDefault();
+    // 若 EHR 直接帶 iss + launch 參數開啟此頁，自動觸發授權
+    (function() {
+        const p = new URLSearchParams(window.location.search);
+        if (p.get('iss') && p.get('launch')) startLaunch();
+    })();
 
-    // 根據官方提供的 Client ID 與 Secret 進行授權啟動
-    FHIR.oauth2.authorize({
-      // 您收到的第二階段測試憑證
-      client_id: "cc344727-6f90-496c-94fd-c7829aa9a51d", 
-      secret: "79f04b56b33491716c0880af72cdef7d3f0629111421cedd18353651cd313d9e",
-      
-      // 根據應用需求設定權限範圍 (Scope)
-      // 包含 launch (啟動內容), patient/*.read (讀取病患資料), openid (身份驗證)
-      scope: "patient/*.read launch openid fhirUser",
-      
-      // 授權完成後的重新導向路徑
-      redirect_uri: "index.html"
-    });
-  });
+    function startLaunch() {
+        const btn = document.getElementById('launch-btn');
+        btn.disabled = true;
+        document.getElementById('spinner').style.display = 'block';
+        document.getElementById('btn-text').textContent = '授權中，請稍候...';
+        document.getElementById('error-box').classList.remove('show');
+
+        try {
+            /**
+             * SMART on FHIR EHR Launch — 規範重點
+             * ✅ iss 由 URL ?iss= 自動讀取，fhirclient 會處理
+             * ✅ launch 由 URL ?launch= 自動讀取
+             * ✅ scope 必須含 "launch"（EHR launch flow）
+             * ✅ 不傳 secret（Public App 規範明確禁止前端存放 client_secret）
+             * ✅ redirect_uri 指向 index.html 作為 callback
+             */
+            FHIR.oauth2.authorize({
+                client_id:    "cc344727-6f90-496c-94fd-c7829aa9a51d",
+                scope:        "launch patient/*.read openid fhirUser",
+                redirect_uri: "index.html"
+                // ❌ 移除 secret：前端不可持有 client_secret
+            });
+        } catch (err) {
+            showError(err.message || String(err));
+        }
+    }
+
+    function showError(msg) {
+        const box = document.getElementById('error-box');
+        box.textContent = '⚠️ 授權啟動失敗：' + msg;
+        box.classList.add('show');
+        document.getElementById('launch-btn').disabled = false;
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('btn-text').textContent = '🔄 重試授權';
+    }
 </script>
-
 </body>
 </html>
